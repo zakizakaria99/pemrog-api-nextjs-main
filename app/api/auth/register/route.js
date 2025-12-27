@@ -1,6 +1,5 @@
 export const runtime = "nodejs";
 
-
 import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import prisma from "@/lib/prisma";
@@ -50,15 +49,10 @@ export async function POST(req) {
       },
     });
   } catch (error) {
-  console.error("REGISTER ERROR:", error);
-
-  return NextResponse.json(
-    {
-      success: false,
-      error: error.message,
-    },
-    { status: 500 }
-  );
-}
-
+    console.error("REGISTER ERROR:", error);
+    return NextResponse.json(
+      { success: false, error: "Internal server error", code: 500 },
+      { status: 500 }
+    );
+  }
 }
