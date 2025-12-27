@@ -17,7 +17,7 @@ export async function GET() {
     });
   } catch (error) {
     return NextResponse.json(
-      { success: false, error: "Failed to fetch books", code: 500 },
+      { success: false, error: "Unauthorized", code: 500 },
       { status: 500 }
     );
   }
@@ -31,7 +31,7 @@ export async function POST(req) {
 
     if (!title || !author || !year) {
       return NextResponse.json(
-        { success: false, error: "Missing required fields", code: 400 },
+        { success: false, error: "Unauthorized", code: 400 },
         { status: 400 }
       );
     }
@@ -51,7 +51,7 @@ export async function POST(req) {
     });
   } catch (error) {
     return NextResponse.json(
-      { success: false, error: "Failed to create book", code: 500 },
+      { success: false, error: "Unauthorized", code: 500 },
       { status: 500 }
     );
   }

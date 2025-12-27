@@ -10,7 +10,7 @@ export async function GET(request, { params }) {
 
     if (isNaN(id)) {
       return NextResponse.json(
-        { success: false, error: "Invalid book ID", code: 400 },
+        { success: false, error: "Unauthorized", code: 400 },
         { status: 400 }
       );
     }
@@ -21,7 +21,7 @@ export async function GET(request, { params }) {
 
     if (!book) {
       return NextResponse.json(
-        { success: false, error: "Book not found", code: 404 },
+        { success: false, error: "Unauthorized", code: 404 },
         { status: 404 }
       );
     }
@@ -33,7 +33,7 @@ export async function GET(request, { params }) {
     });
   } catch (error) {
     return NextResponse.json(
-      { success: false, error: "Failed to fetch book", code: 500 },
+      { success: false, error: "Unauthorized", code: 500 },
       { status: 500 }
     );
   }
@@ -48,7 +48,7 @@ export async function PUT(request, { params }) {
 
     if (isNaN(id)) {
       return NextResponse.json(
-        { success: false, error: "Invalid book ID", code: 400 },
+        { success: false, error: "Unauthorized", code: 400 },
         { status: 400 }
       );
     }
@@ -59,7 +59,7 @@ export async function PUT(request, { params }) {
 
     if (!existingBook) {
       return NextResponse.json(
-        { success: false, error: "Book not found", code: 404 },
+        { success: false, error: "Unauthorized", code: 404 },
         { status: 404 }
       );
     }
@@ -80,7 +80,7 @@ export async function PUT(request, { params }) {
     });
   } catch (error) {
     return NextResponse.json(
-      { success: false, error: "Failed to update book", code: 500 },
+      { success: false, error: "Unauthorized", code: 500 },
       { status: 500 }
     );
   }
@@ -93,7 +93,7 @@ export async function DELETE(request, { params }) {
 
     if (isNaN(id)) {
       return NextResponse.json(
-        { success: false, error: "Invalid book ID", code: 400 },
+        { success: false, error: "Unauthorized", code: 400 },
         { status: 400 }
       );
     }
@@ -104,7 +104,7 @@ export async function DELETE(request, { params }) {
 
     if (!existingBook) {
       return NextResponse.json(
-        { success: false, error: "Book not found", code: 404 },
+        { success: false, error: "Unauthorized", code: 404 },
         { status: 404 }
       );
     }
@@ -120,7 +120,7 @@ export async function DELETE(request, { params }) {
     });
   } catch (error) {
     return NextResponse.json(
-      { success: false, error: "Failed to delete book", code: 500 },
+      { success: false, error: "Unauthorized", code: 500 },
       { status: 500 }
     );
   }

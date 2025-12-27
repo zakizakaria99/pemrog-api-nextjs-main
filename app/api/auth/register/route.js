@@ -11,7 +11,7 @@ export async function POST(req) {
 
     if (!name || !email || !password) {
       return NextResponse.json(
-        { success: false, error: "Missing required fields", code: 400 },
+        { success: false, error: "Unauthorized", code: 400 },
         { status: 400 }
       );
     }
@@ -22,7 +22,7 @@ export async function POST(req) {
 
     if (existingUser) {
       return NextResponse.json(
-        { success: false, error: "Email already registered", code: 409 },
+        { success: false, error: "Unauthorized", code: 409 },
         { status: 409 }
       );
     }
@@ -51,7 +51,7 @@ export async function POST(req) {
   } catch (error) {
     console.error("REGISTER ERROR:", error);
     return NextResponse.json(
-      { success: false, error: "Internal server error", code: 500 },
+      { success: false, error: "Unauthorized", code: 500 },
       { status: 500 }
     );
   }
