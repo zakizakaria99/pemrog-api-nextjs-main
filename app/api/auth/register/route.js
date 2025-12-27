@@ -42,12 +42,7 @@ export async function POST(req) {
     return NextResponse.json({
       success: true,
       message: "User registered successfully",
-      data: {
-        id: user.id,
-        name: user.name,
-        email: user.email,
-        role: user.role,
-      },
+    
     });
   } catch (error) {
     return NextResponse.json(
