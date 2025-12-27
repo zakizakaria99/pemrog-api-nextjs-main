@@ -5,7 +5,7 @@ import { jwtVerify } from "jose";
 export async function middleware(request) {
   const { pathname } = request.nextUrl;
 
-  // 1. Public route (auth)
+  // ✅ 1. BYPASS AUTH ROUTES (INI KUNCINYA)
   if (pathname.startsWith("/api/auth")) {
     return NextResponse.next();
   }
@@ -27,8 +27,7 @@ export async function middleware(request) {
     const secret = new TextEncoder().encode(process.env.JWT_SECRET);
     const { payload } = await jwtVerify(token, secret);
 
-    // 4. Role-based authorization
-    // ADMIN only
+    // 4. ADMIN only route
     if (pathname.startsWith("/api/users")) {
       if (payload.role !== "ADMIN") {
         return NextResponse.json(
@@ -38,7 +37,6 @@ export async function middleware(request) {
       }
     }
 
-    // 5. Token valid → lanjut
     return NextResponse.next();
 
   } catch (error) {
@@ -50,7 +48,5 @@ export async function middleware(request) {
 }
 
 export const config = {
-  matcher: [
-    "/api/:path*"
-  ],
+  matcher: ["/api/:path*"],
 };
