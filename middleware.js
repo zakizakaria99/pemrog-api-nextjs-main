@@ -1,18 +1,17 @@
-// middleware.js
 import { NextResponse } from "next/server";
 import { jwtVerify } from "jose";
 
 export async function middleware(request) {
   const { pathname } = request.nextUrl;
+  const method = request.method;
 
-  // ✅ 1. BYPASS AUTH ROUTES (INI KUNCINYA)
+  // 1. Public auth routes
   if (pathname.startsWith("/api/auth")) {
     return NextResponse.next();
   }
 
   // 2. Ambil token
   const authHeader = request.headers.get("authorization");
-
   if (!authHeader || !authHeader.startsWith("Bearer ")) {
     return NextResponse.json(
       { success: false, error: "Unauthorized", code: 401 },
@@ -23,11 +22,10 @@ export async function middleware(request) {
   const token = authHeader.split(" ")[1];
 
   try {
-    // 3. Verifikasi token
     const secret = new TextEncoder().encode(process.env.JWT_SECRET);
     const { payload } = await jwtVerify(token, secret);
 
-    // 4. ADMIN only route
+    // 3. ADMIN only: /api/users/*
     if (pathname.startsWith("/api/users")) {
       if (payload.role !== "ADMIN") {
         return NextResponse.json(
@@ -37,8 +35,17 @@ export async function middleware(request) {
       }
     }
 
-    return NextResponse.next();
+    // 4. ADMIN only: DELETE /api/books/*
+    if (pathname.startsWith("/api/books") && method === "DELETE") {
+      if (payload.role !== "ADMIN") {
+        return NextResponse.json(
+          { success: false, error: "Forbidden: Admin only", code: 403 },
+          { status: 403 }
+        );
+      }
+    }
 
+    return NextResponse.next();
   } catch (error) {
     return NextResponse.json(
       { success: false, error: "Invalid token", code: 401 },
