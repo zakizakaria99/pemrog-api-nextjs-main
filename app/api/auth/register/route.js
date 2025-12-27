@@ -50,9 +50,15 @@ export async function POST(req) {
       },
     });
   } catch (error) {
-    return NextResponse.json(
-      { success: false, error: "Internal server error", code: 500 },
-      { status: 500 }
-    );
-  }
+  console.error("REGISTER ERROR:", error);
+
+  return NextResponse.json(
+    {
+      success: false,
+      error: error.message,
+    },
+    { status: 500 }
+  );
+}
+
 }
