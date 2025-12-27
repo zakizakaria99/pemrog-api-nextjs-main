@@ -38,3 +38,90 @@ export async function GET(request, { params }) {
     );
   }
 }
+
+// UPDATE book
+export async function PUT(request, { params }) {
+  try {
+    const id = Number(params.id);
+    const body = await request.json();
+    const { title, author, year } = body;
+
+    if (isNaN(id)) {
+      return NextResponse.json(
+        { success: false, error: "Invalid book ID", code: 400 },
+        { status: 400 }
+      );
+    }
+
+    const existingBook = await prisma.book.findUnique({
+      where: { id },
+    });
+
+    if (!existingBook) {
+      return NextResponse.json(
+        { success: false, error: "Book not found", code: 404 },
+        { status: 404 }
+      );
+    }
+
+    const updatedBook = await prisma.book.update({
+      where: { id },
+      data: {
+        title: title ?? existingBook.title,
+        author: author ?? existingBook.author,
+        year: year ?? existingBook.year,
+      },
+    });
+
+    return NextResponse.json({
+      success: true,
+      message: "Book updated successfully",
+      data: updatedBook,
+    });
+  } catch (error) {
+    return NextResponse.json(
+      { success: false, error: "Failed to update book", code: 500 },
+      { status: 500 }
+    );
+  }
+}
+
+// DELETE book (ADMIN only)
+export async function DELETE(request, { params }) {
+  try {
+    const id = Number(params.id);
+
+    if (isNaN(id)) {
+      return NextResponse.json(
+        { success: false, error: "Invalid book ID", code: 400 },
+        { status: 400 }
+      );
+    }
+
+    const existingBook = await prisma.book.findUnique({
+      where: { id },
+    });
+
+    if (!existingBook) {
+      return NextResponse.json(
+        { success: false, error: "Book not found", code: 404 },
+        { status: 404 }
+      );
+    }
+
+    await prisma.book.delete({
+      where: { id },
+    });
+
+    return NextResponse.json({
+      success: true,
+      message: "Book deleted successfully",
+      data: null,
+    });
+  } catch (error) {
+    return NextResponse.json(
+      { success: false, error: "Failed to delete book", code: 500 },
+      { status: 500 }
+    );
+  }
+}
