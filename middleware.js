@@ -3,47 +3,54 @@ import { NextResponse } from "next/server";
 import { jwtVerify } from "jose";
 
 export async function middleware(request) {
-  //tambahkan ini sementara untuk bypass middleware di pertemuan 08. CRUD API Lanjutan
-  if (process.env.DISABLE_AUTH_MIDDLEWARE === "true") {
-    console.log("Middleware dinonaktifkan sementara");
+  const { pathname } = request.nextUrl;
+
+  // 1. Public route (auth)
+  if (pathname.startsWith("/api/auth")) {
     return NextResponse.next();
   }
 
-  // 1. Ambil token dari Header
-  const authHeader = request.headers.get("Authorization");
-  
+  // 2. Ambil token
+  const authHeader = request.headers.get("authorization");
+
   if (!authHeader || !authHeader.startsWith("Bearer ")) {
     return NextResponse.json(
-        { message: "Unauthorized: Token missing" }, 
-        { status: 401 }
+      { success: false, error: "Unauthorized", code: 401 },
+      { status: 401 }
     );
   }
 
-  const token = authHeader.split(" ")[1]; // Ambil string setelah "Bearer"
+  const token = authHeader.split(" ")[1];
 
   try {
-    // 2. Verifikasi Token
+    // 3. Verifikasi token
     const secret = new TextEncoder().encode(process.env.JWT_SECRET);
-    await jwtVerify(token, secret);
+    const { payload } = await jwtVerify(token, secret);
 
-    // 3. Jika sukses, lanjut
+    // 4. Role-based authorization
+    // ADMIN only
+    if (pathname.startsWith("/api/users")) {
+      if (payload.role !== "ADMIN") {
+        return NextResponse.json(
+          { success: false, error: "Forbidden: Admin only", code: 403 },
+          { status: 403 }
+        );
+      }
+    }
+
+    // 5. Token valid → lanjut
     return NextResponse.next();
 
   } catch (error) {
-    // 4. Jika token salah/expired
-    console.error("Token salah/expired", error);
     return NextResponse.json(
-        { message: "Unauthorized: Invalid token" }, 
-        { status: 401 }
+      { success: false, error: "Invalid token", code: 401 },
+      { status: 401 }
     );
   }
 }
 
 export const config = {
-  // Tentukan route mana yang difilter middleware ini
-  // Contoh: Semua route di dalam /api/products dan /api/users
   matcher: [
-    "/api/products/:path*", 
-    "/api/users/:path*"
+    "/api/:path*"
   ],
 };
