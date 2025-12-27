@@ -1,40 +1,62 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
-import { SignJWT } from "jose"; // Import dari jose
+import jwt from "jsonwebtoken";
+import prisma from "@/lib/prisma";
 
-export async function POST(request) {
+export async function POST(req) {
   try {
-    const { email, password } = await request.json();
+    const body = await req.json();
+    const { email, password } = body;
 
-    // 1. Cari User
-    const user = await prisma.user.findUnique({ where: { email } });
-    if (!user) {
-      return NextResponse.json({ message: "Invalid credentials" }, { status: 401 });
+    if (!email || !password) {
+      return NextResponse.json(
+        { success: false, error: "Email and password required", code: 400 },
+        { status: 400 }
+      );
     }
 
-    // 2. Cek Password
-    const isPasswordValid = await bcrypt.compare(password, user.password);
-    
-    if (!isPasswordValid) {
-      return NextResponse.json({ message: "Invalid credentials" }, { status: 401 });
-    }
-
-    // 3. Buat Token (Payload: id, email)
-    const secret = new TextEncoder().encode(process.env.JWT_SECRET);
-    const token = await new SignJWT({ id: user.id, email: user.email })
-      .setProtectedHeader({ alg: "HS256" })
-      .setExpirationTime("2h") // Token berlaku 2 jam
-      .sign(secret);
-
-    // 4. Kirim Token
-    return NextResponse.json({ 
-        message: "Login Success", 
-        token: token 
+    const user = await prisma.user.findUnique({
+      where: { email },
     });
 
+    if (!user) {
+      return NextResponse.json(
+        { success: false, error: "Invalid credentials", code: 401 },
+        { status: 401 }
+      );
+    }
+
+    const isMatch = await bcrypt.compare(password, user.password);
+
+    if (!isMatch) {
+      return NextResponse.json(
+        { success: false, error: "Invalid credentials", code: 401 },
+        { status: 401 }
+      );
+    }
+
+    const token = jwt.sign(
+      { id: user.id, email: user.email, role: user.role },
+      process.env.JWT_SECRET,
+      { expiresIn: "1d" }
+    );
+
+    return NextResponse.json({
+      success: true,
+      message: "Login successful",
+      data: {
+        token,
+        user: {
+          id: user.id,
+          email: user.email,
+          role: user.role,
+        },
+      },
+    });
   } catch (error) {
-    console.error("Error GET User: ", error);
-    return NextResponse.json({ message: "Error" }, { status: 500 });
+    return NextResponse.json(
+      { success: false, error: "Internal server error", code: 500 },
+      { status: 500 }
+    );
   }
 }

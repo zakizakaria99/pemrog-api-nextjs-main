@@ -1,27 +1,55 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
+import prisma from "@/lib/prisma";
 
-export async function POST(request) {
+export async function POST(req) {
   try {
-    const { name, email, password } = await request.json();
+    const body = await req.json();
+    const { name, email, password, role } = body;
 
-    // 1. Hash Password
-    // Angka 10 adalah salt rounds (standar keamanan saat ini)
+    if (!name || !email || !password) {
+      return NextResponse.json(
+        { success: false, error: "Missing required fields", code: 400 },
+        { status: 400 }
+      );
+    }
+
+    const existingUser = await prisma.user.findUnique({
+      where: { email },
+    });
+
+    if (existingUser) {
+      return NextResponse.json(
+        { success: false, error: "Email already registered", code: 409 },
+        { status: 409 }
+      );
+    }
+
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // 2. Simpan ke DB
-    const newUser = await prisma.user.create({
+    const user = await prisma.user.create({
       data: {
         name,
         email,
-        password: hashedPassword, // Simpan yang sudah di-hash!
+        password: hashedPassword,
+        role: role || "USER",
       },
     });
 
-    return NextResponse.json({ message: "User created" }, { status: 201 });
+    return NextResponse.json({
+      success: true,
+      message: "User registered successfully",
+      data: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+      },
+    });
   } catch (error) {
-    console.error("Error GET User: ", error);
-    return NextResponse.json({ message: "Error" }, { status: 500 });
+    return NextResponse.json(
+      { success: false, error: "Internal server error", code: 500 },
+      { status: 500 }
+    );
   }
 }
