@@ -69,7 +69,8 @@ Aturan akses:
   "success": true,
   "message": "...",
   "data": {}
-} ```
+} 
+```
 
 ### Error
 ```json
@@ -77,7 +78,8 @@ Aturan akses:
   "success": false,
   "error": "Unauthorized",
   "code": 401
-}```
+}
+```
 
 ## Deployment
 Backend dideploy menggunakan Vercel  
