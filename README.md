@@ -76,6 +76,7 @@ Aturan akses:
   "error": "Unauthorized",
   "code": 401
 }
+```
 
 ## Deployment
 Backend dideploy menggunakan Vercel  
